@@ -1,69 +1,53 @@
-import Image from "next/image";
+"use client";
+
+import { FormEvent, useState } from "react";
+import { ArrowRight, Check, ChevronDown, Globe2, Menu, MessageCircle, Monitor, Palette, Send, ShoppingBag, Smartphone, Sparkles, X, Zap } from "lucide-react";
+
+const portfolioUrl = "https://loquacious-bienenstitch-80cf6c.netlify.app/";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
+const services = [
+  { icon: Globe2, number: "01", name: "Business Website", text: "A confident digital home for your brand, team, and next big opportunity." },
+  { icon: ShoppingBag, number: "02", name: "E-Commerce Website", text: "A smooth, conversion-ready storefront built around how your customers shop." },
+  { icon: Smartphone, number: "03", name: "Restaurant & Café", text: "Make your menu, atmosphere, and table bookings easy to discover." },
+  { icon: Palette, number: "04", name: "Portfolio Website", text: "A sharp personal showcase that puts your best work in the spotlight." },
+  { icon: Zap, number: "05", name: "Landing Page", text: "Focused pages designed to turn a clear offer into meaningful action." },
+  { icon: Monitor, number: "06", name: "Custom Web Application", text: "Purpose-built interfaces and workflows for ambitious digital products." },
+];
+const prices = [
+  { label: "Starter", title: "A clear first impression", text: "For focused launches and small businesses that need to get online with intent.", features: ["Discovery call", "Responsive page design", "SEO-ready structure"], action: "Discuss a starter" },
+  { label: "Business", title: "A site that works harder", text: "For growing brands that need a complete, polished web presence.", features: ["Multi-page experience", "Content and conversion strategy", "Launch support"], action: "Plan my website", featured: true },
+  { label: "Custom", title: "Built around your workflow", text: "For teams with a bigger idea, a unique process, or a product to shape.", features: ["Custom scope and roadmap", "Interactive functionality", "Flexible ongoing support"], action: "Start a conversation" },
+];
+
+function SectionLabel({ children }: { children: string }) { return <p className="section-label">{children}</p>; }
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [serviceOpen, setServiceOpen] = useState<string | null>(null);
+  const [enquiryState, setEnquiryState] = useState({ status: "idle", message: "" });
+  const [feedbackState, setFeedbackState] = useState({ status: "idle", message: "" });
+
+  async function submitEnquiry(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setEnquiryState({ status: "loading", message: "" });
+    try { const response = await fetch(`${apiUrl}/api/enquiries`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget).entries())) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setEnquiryState({ status: "success", message: data.message }); event.currentTarget.reset(); } catch (error) { setEnquiryState({ status: "error", message: error instanceof Error ? error.message : "Something went wrong. Please try again." }); }
+  }
+  async function submitFeedback(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setFeedbackState({ status: "loading", message: "" });
+    try { const response = await fetch(`${apiUrl}/api/feedback`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget).entries())) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setFeedbackState({ status: "success", message: data.message }); event.currentTarget.reset(); } catch (error) { setFeedbackState({ status: "error", message: error instanceof Error ? error.message : "Something went wrong. Please try again." }); }
+  }
+  function openWhatsApp() { const message = encodeURIComponent("Hi, I want to build a website.\n\nI would love to discuss my project with you."); window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${message}`, "_blank", "noopener,noreferrer"); }
+  return <main>
+    <nav className="nav-shell"><a href="#top" className="brand"><span className="brand-mark">W</span><span>Web<span className="brand-accent">Service</span></span></a><div className={`nav-links ${menuOpen ? "is-open" : ""}`}>{[["Services", "services"], ["Portfolio", "portfolio"], ["Pricing", "pricing"], ["About", "about"], ["Feedback", "feedback"], ["Contact", "contact"]].map(([label, id]) => <a key={id} href={`#${id}`} onClick={() => setMenuOpen(false)}>{label}</a>)}<a className="nav-cta" href="#contact" onClick={() => setMenuOpen(false)}>Get a Quote <ArrowRight size={15} /></a></div><button className="menu-button" aria-label="Toggle menu" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X /> : <Menu />}</button></nav>
+    <section className="hero" id="top"><div className="hero-grid" /><div className="hero-copy"><div className="eyebrow"><span className="eyebrow-dot" /> Independent digital studio</div><h1>You tell us.<br /><em>We build it.</em></h1><p>Modern, responsive and user-friendly websites built according to your requirements.</p><div className="hero-actions"><a className="button button-dark" href="#contact">Get a Quote <ArrowRight size={17} /></a><a className="text-link" href={portfolioUrl} target="_blank" rel="noreferrer">View Portfolio <ArrowRight size={16} /></a></div><div className="hero-proof"><span className="proof-avatars"><i>W</i><i>S</i><i>+</i></span><span>Thoughtful design.<br /><strong>Built for real people.</strong></span></div></div><div className="hero-orbit"><div className="orbit-ring ring-one" /><div className="orbit-ring ring-two" /><div className="orbit-card"><Sparkles size={18} /><span>Ideas into<br /><strong>interfaces</strong></span></div><div className="orbit-chip">01 / 06</div><div className="orbit-dot" /></div><div className="scroll-note"><span /> Scroll to explore</div></section>
+    <section className="ticker"><div>WEBSITE DEVELOPMENT <span>✦</span> DIGITAL STRATEGY <span>✦</span> HUMAN-FIRST DESIGN <span>✦</span> WEBSITE DEVELOPMENT <span>✦</span> DIGITAL STRATEGY <span>✦</span></div></section>
+    <section className="section services-section" id="services"><div className="section-heading"><div><SectionLabel>What I can build</SectionLabel><h2>Good websites do<br /><em>more than look good.</em></h2></div><p>Every project starts with a conversation. Together, we turn your goals into a digital experience that feels clear, useful, and unmistakably yours.</p></div><div className="services-grid">{services.map((service) => { const Icon = service.icon; return <article className={`service-card ${serviceOpen === service.name ? "active" : ""}`} key={service.name}><div className="service-top"><span>{service.number}</span><Icon size={24} strokeWidth={1.5} /></div><h3>{service.name}</h3><p>{service.text}</p><button className="service-action" onClick={() => setServiceOpen(serviceOpen === service.name ? null : service.name)}>View Details <ChevronDown size={15} className={serviceOpen === service.name ? "turn" : ""} /></button>{serviceOpen === service.name && <div className="service-detail">A focused, collaborative process from first sketch to final launch, shaped around your goals and audience.</div>}</article>; })}</div></section>
+    <section className="portfolio-section" id="portfolio"><div className="portfolio-panel"><div className="portfolio-copy"><SectionLabel>One focused showcase</SectionLabel><h2>My<br /><em>Portfolio</em></h2><p>Explore my skills, projects, experience and work.</p><a className="button button-light" href={portfolioUrl} target="_blank" rel="noreferrer">View My Portfolio <ArrowRight size={17} /></a></div><div className="portfolio-preview"><div className="preview-window"><div className="preview-bar"><span /><span /><span /><b>loquacious-bienenstitch</b></div><div className="preview-body"><div className="preview-line" /><div className="preview-line short" /><div className="preview-block"><strong>Creative<br />direction.</strong><span>Thoughtful work<br />with a point of view.</span></div><div className="preview-foot">Explore the full portfolio <ArrowRight size={14} /></div></div></div><div className="preview-stamp">VIEW<br /><strong>WORK</strong></div></div></div></section>
+    <section className="section why-section"><div className="why-intro"><SectionLabel>The WebService difference</SectionLabel><h2>A partner who<br /><em>gets the details.</em></h2></div><div className="why-list"><div><span>01</span><div><h3>Clarity before code</h3><p>We make the right decisions early, so your website stays focused and easy to use.</p></div></div><div><span>02</span><div><h3>Made for your audience</h3><p>No templates pretending to be strategy. Your site should sound and feel like your business.</p></div></div><div><span>03</span><div><h3>Ready for what is next</h3><p>Fast, accessible, and flexible foundations that can grow as your work does.</p></div></div></div></section>
+    <section className="section pricing-section" id="pricing"><div className="section-heading"><div><SectionLabel>Simple starting points</SectionLabel><h2>Choose your<br /><em>next chapter.</em></h2></div><p>These are starting points, not rigid packages. Final pricing depends on your goals, content, functionality, and timeline.</p></div><div className="pricing-grid">{prices.map((price) => <article className={`price-card ${price.featured ? "featured" : ""}`} key={price.label}><div className="price-label">{price.label}{price.featured && <span>Most popular</span>}</div><h3>{price.title}</h3><p>{price.text}</p><ul>{price.features.map((feature) => <li key={feature}><Check size={16} />{feature}</li>)}</ul><a href="#contact" className="price-link">{price.action} <ArrowRight size={15} /></a></article>)}</div></section>
+    <section className="about-band" id="about"><div className="about-quote"><span className="quote-mark">“</span><h2>Your website is often the first conversation someone has with your business. Let’s make it a good one.</h2><p>WebService is an independent web development service built for people with something worth sharing.</p></div><div className="about-facts"><div><strong>01</strong><span>Personal attention<br />on every project</span></div><div><strong>02</strong><span>Design with<br />purpose</span></div><div><strong>03</strong><span>Built to be<br />remembered</span></div></div></section>
+    <section className="section feedback-section" id="feedback"><div className="feedback-copy"><SectionLabel>Kind words welcome</SectionLabel><h2>Help the next<br /><em>client find me.</em></h2><p>Have we worked together? A few honest words help people know what it feels like to build with WebService.</p></div><form className="feedback-form" onSubmit={submitFeedback}><div className="form-row"><label>Name<input name="name" required placeholder="Your name" /></label><label>Rating<select name="rating" defaultValue="5" required><option value="5">★★★★★ 5</option><option value="4">★★★★ 4</option><option value="3">★★★ 3</option><option value="2">★★ 2</option><option value="1">★ 1</option></select></label></div><label>Your feedback<textarea name="message" required placeholder="What was it like working together?" rows={4} /></label><button className="button button-dark" disabled={feedbackState.status === "loading"}>{feedbackState.status === "loading" ? "Sending..." : "Share feedback"} <Send size={16} /></button>{feedbackState.message && <p className={`form-message ${feedbackState.status}`}>{feedbackState.message}</p>}</form></section>
+    <section className="contact-section" id="contact"><div className="contact-heading"><SectionLabel>Let’s make something useful</SectionLabel><h2>Have a project<br /><em>in mind?</em></h2><p>Tell me a little about it. I’ll get back to you with thoughtful next steps.</p><button className="whatsapp-button" onClick={openWhatsApp}><MessageCircle size={19} /> Chat on WhatsApp</button></div><form className="enquiry-form" onSubmit={submitEnquiry}><div className="form-row"><label>Name<input name="name" required placeholder="Your name" /></label><label>Email<input type="email" name="email" required placeholder="you@company.com" /></label></div><div className="form-row"><label>Phone<input name="phone" required placeholder="Your phone number" /></label><label>Website type<select name="websiteType" defaultValue="" required><option value="" disabled>Choose a service</option>{services.map((service) => <option key={service.name}>{service.name}</option>)}</select></label></div><label>Budget<select name="budget" defaultValue="" required><option value="" disabled>Choose a range</option><option>Under ₹25,000</option><option>₹25,000 – ₹50,000</option><option>₹50,000 – ₹1,00,000</option><option>Let’s discuss</option></select></label><label>Project requirements<textarea name="requirements" required placeholder="What are you hoping to build?" rows={5} /></label><button className="button button-light submit-button" disabled={enquiryState.status === "loading"}>{enquiryState.status === "loading" ? "Sending enquiry..." : "Send my enquiry"} <ArrowRight size={17} /></button>{enquiryState.message && <p className={`form-message ${enquiryState.status}`}>{enquiryState.message}</p>}</form></section>
+    <footer><a href="#top" className="brand"><span className="brand-mark">W</span><span>Web<span className="brand-accent">Service</span></span></a><p>You tell us. We build it.</p><div className="footer-links"><a href="#services">Services</a><a href="#portfolio">Portfolio</a><a href="#contact">Contact</a><a href="/admin">Admin</a></div><small>© {new Date().getFullYear()} WebService. Built with intention.</small></footer>
+  </main>;
 }
