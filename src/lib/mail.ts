@@ -15,8 +15,7 @@ export async function sendEnquiryNotification(enquiry: {
   const recipient = process.env.NOTIFICATION_EMAIL;
 
   if (!host || !user || !password || !recipient) {
-    console.warn("Email notification skipped: SMTP environment variables are incomplete.");
-    return;
+    throw new Error("SMTP environment variables are incomplete.");
   }
 
   const transporter = nodemailer.createTransport({
@@ -30,9 +29,9 @@ export async function sendEnquiryNotification(enquiry: {
     from: process.env.SMTP_FROM || user,
     to: recipient,
     replyTo: enquiry.email,
-    subject: `New WebService enquiry from ${enquiry.name}`,
+    subject: `New WebService Enquiry — ${enquiry.websiteType}`,
     text: [
-      "You received a new website enquiry.",
+      "New Website Enquiry",
       "",
       `Name: ${enquiry.name}`,
       `Email: ${enquiry.email}`,
@@ -42,6 +41,8 @@ export async function sendEnquiryNotification(enquiry: {
       "",
       "Project requirements:",
       enquiry.requirements,
+      "",
+      `Submitted at: ${new Date().toISOString()}`,
     ].join("\n"),
   });
 }

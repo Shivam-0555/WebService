@@ -17,15 +17,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please add your name, a rating, and feedback." }, { status: 400 });
     }
     await connectToDatabase();
-    await Feedback.create({ name: body.name.trim(), rating, message: body.message.trim() });
-    return NextResponse.json({ message: "Thank you for sharing your feedback." }, { status: 201 });
+    const feedback = await Feedback.create({ name: body.name.trim(), rating, message: body.message.trim() });
+    return NextResponse.json({ message: "Thank you for sharing your feedback.", feedback }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "We could not save your feedback right now." }, { status: 500 });
   }
 }
 
 export async function GET() {
-  if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await connectToDatabase();
     return NextResponse.json(await Feedback.find().sort({ createdAt: -1 }).lean());

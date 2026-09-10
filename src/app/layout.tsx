@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import WhatsAppButton from "../components/WhatsAppButton";
 
 export const metadata: Metadata = {
   title: "WebService | You Tell Us. We Build It.",
@@ -8,6 +9,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en"><body>{children}</body></html>
+    <html lang="en">
+      <body>
+        {children}
+        <WhatsAppButton />
+      </body>
+    </html>
   );
 }

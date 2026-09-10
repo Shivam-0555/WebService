@@ -15,14 +15,21 @@ export default function AdminPage() {
   const [error, setError] = useState("");
 
   async function loadData() {
-    const [enquiriesResponse, feedbackResponse] = await Promise.all([fetch("/api/enquiries"), fetch("/api/feedback")]);
-    if (enquiriesResponse.status === 401) { setLoggedIn(false); return; }
-    setEnquiries(await enquiriesResponse.json()); setFeedback(await feedbackResponse.json()); setLoggedIn(true);
+    try {
+      const [enquiriesResponse, feedbackResponse] = await Promise.all([fetch("/api/enquiries"), fetch("/api/feedback")]);
+      if (enquiriesResponse.status === 401) { setLoggedIn(false); return; }
+      if (!enquiriesResponse.ok || !feedbackResponse.ok) throw new Error("Could not load dashboard data.");
+      const [enquiriesData, feedbackData] = await Promise.all([enquiriesResponse.json(), feedbackResponse.json()]);
+      if (!Array.isArray(enquiriesData) || !Array.isArray(feedbackData)) throw new Error("Could not load dashboard data.");
+      setEnquiries(enquiriesData); setFeedback(feedbackData); setLoggedIn(true); setError("");
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Could not load dashboard data.");
+    }
   }
   useEffect(() => { const timer = window.setTimeout(() => void loadData(), 0); return () => window.clearTimeout(timer); }, []);
   async function signIn(event: React.FormEvent) { event.preventDefault(); setError(""); const response = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(login) }); if (!response.ok) { setError((await response.json()).error); return; } await loadData(); }
-  async function updateStatus(id: string, status: string) { await fetch("/api/enquiries", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status }) }); await loadData(); }
-  async function deleteItem(type: "enquiries" | "feedback", id: string) { await fetch(`/api/${type}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) }); await loadData(); }
+  async function updateStatus(id: string, status: string) { await fetch(`/api/enquiries/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }); await loadData(); }
+  async function deleteItem(type: "enquiries" | "feedback", id: string) { await fetch(`/api/${type}/${id}`, { method: "DELETE" }); await loadData(); }
   async function signOut() { await fetch("/api/auth/logout", { method: "POST" }); setLoggedIn(false); }
 
   if (!loggedIn) return <main className="admin-page"><div className="admin-login"><Link href="/" className="brand"><span className="brand-mark">W</span><span>Web<span className="brand-accent">Service</span></span></Link><h1>Admin access</h1><p>Sign in to manage enquiries and feedback.</p><form onSubmit={signIn}><label>Email<input type="email" value={login.email} onChange={(event) => setLogin({ ...login, email: event.target.value })} required /></label><label>Password<input type="password" value={login.password} onChange={(event) => setLogin({ ...login, password: event.target.value })} required /></label><button className="button button-dark">Sign in</button>{error && <small className="admin-error">{error}</small>}</form></div></main>;
