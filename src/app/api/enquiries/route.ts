@@ -31,7 +31,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Your enquiry could not be sent right now. Please try again or contact me on WhatsApp.", saved: true, id: enquiry.id }, { status: 503 });
     }
     return NextResponse.json({ message: "Thanks! Your enquiry has been sent successfully. I'll get back to you soon.", id: enquiry.id }, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("Enquiry save error:", error);
     return NextResponse.json({ error: "We could not save your enquiry right now." }, { status: 500 });
   }
 }

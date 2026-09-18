@@ -19,7 +19,8 @@ export async function POST(request: Request) {
     await connectToDatabase();
     const feedback = await Feedback.create({ name: body.name.trim(), rating, message: body.message.trim() });
     return NextResponse.json({ message: "Thank you for sharing your feedback.", feedback }, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("Feedback save error:", error);
     return NextResponse.json({ error: "We could not save your feedback right now." }, { status: 500 });
   }
 }
